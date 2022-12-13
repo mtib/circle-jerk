@@ -1,0 +1,25 @@
+{
+    "overrides": [
+        {
+            "files": [
+                "*.tsx",
+                "*.ts"
+            ],
+            "parser": "@typescript-eslint/parser",
+            "plugins": [
+                "@typescript-eslint"
+            ]
+        }
+    ],
+    "extends": [
+        "eslint:recommended",
+        "plugin:react-hooks/recommended"
+    ],
+    "env": {
+        "browser": true,
+        "node": true
+    },
+    "ignorePatterns": [
+        "dist/**/*.js"
+    ]
+}
