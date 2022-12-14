@@ -46,18 +46,10 @@ async fn handle_connection(
     connection: WsUpgrade<TcpStream, Option<Buffer>>,
     state: Arc<Mutex<State>>,
     list_of_connections: Arc<Mutex<Vec<Connection>>>,
+    id: usize,
 ) {
     let mut client = connection.accept().unwrap();
     let own_name = Arc::new(Mutex::new(None as Option<String>));
-
-    let id = {
-        let list = list_of_connections.lock().unwrap();
-        if let Some(last) = list.last() {
-            last.id + 1
-        } else {
-            1
-        }
-    };
 
     let (send, mut recv) = mpsc::channel(10);
 
@@ -245,12 +237,16 @@ async fn main() {
 
     let state = Arc::new(Mutex::new(HashMap::<Name, Count>::new()));
     let list_of_connections = Arc::new(Mutex::new(Vec::<Connection>::new()));
+    let mut id = 0;
 
     for connection in server.filter_map(Result::ok) {
+        let connection_id = id;
+        id += 1;
         tokio::spawn(handle_connection(
             connection,
             Arc::clone(&state),
             Arc::clone(&list_of_connections),
+            connection_id,
         ));
     }
 }

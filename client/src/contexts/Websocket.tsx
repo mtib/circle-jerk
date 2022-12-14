@@ -1,10 +1,10 @@
+/* eslint-disable no-unused-vars */
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import * as React from 'react';
 import { WEBSOCKET_URL_STRING } from '../config/config';
+import { throttle } from 'lodash';
 
-// eslint-disable-next-line no-unused-vars
 export type Callback<T extends WebsocketServerMessage['type']> = (event: WebsocketServerMessage & { type: T }) => unknown;
-// eslint-disable-next-line no-unused-vars
 export type ChangeEventListener<T extends WebsocketServerMessage['type']> = (eventType: T, handler: Callback<T>) => void;
 export type WebsocketContextValue = {
     websocket: WebSocket | null,
@@ -12,7 +12,6 @@ export type WebsocketContextValue = {
     removeEventListener: WebsocketContextValue['addEventListener'],
     ready: boolean,
     closed: boolean,
-    // eslint-disable-next-line no-unused-vars
     sendMessage: (message: ClientMessage) => void,
 }
 
@@ -61,12 +60,12 @@ const WebsocketProvider = ({ children }) => {
     const [ready, setReady] = React.useState(false);
     const [closed, setClosed] = React.useState(false);
 
-    React.useEffect(() => {
+    const connect = React.useCallback(() => {
         const ws = new WebSocket(WEBSOCKET_URL_STRING);
         ws.addEventListener('open', () => {
             setReady(true);
+            setClosed(false);
         })
-
         setWebsocket(ws);
 
         return () => {
@@ -75,6 +74,10 @@ const WebsocketProvider = ({ children }) => {
             setWebsocket(null);
         }
     }, []);
+
+    React.useEffect(() => {
+        return connect();
+    }, [connect]);
 
     const [callbacks, setCallbacks] = React.useState<{ type: WebsocketServerMessage['type'], handler: Callback<WebsocketServerMessage['type']> }[]>([]);
 
@@ -125,6 +128,35 @@ const WebsocketProvider = ({ children }) => {
         }
         websocket.send(JSON.stringify(message));
     }, [ready, websocket]);
+
+    React.useEffect(() => {
+        if (!closed) {
+            return;
+        }
+        const retry = throttle(async () => {
+            const ws = new WebSocket(WEBSOCKET_URL_STRING);
+            const giveUp = () => {
+                ws.close();
+            }
+            ws.addEventListener('close', giveUp);
+            ws.addEventListener('error', giveUp);
+            const timeout = setTimeout(giveUp, 500);
+            ws.addEventListener('open', () => {
+                clearTimeout(timeout);
+                ws.removeEventListener('close', giveUp);
+                ws.removeEventListener('error', giveUp);
+                setReady(true);
+                setClosed(false);
+                setWebsocket(ws);
+            })
+        }, 500);
+        retry();
+        const retryTimeout = setInterval(retry, 1000);
+
+        return () => {
+            clearInterval(retryTimeout);
+        }
+    }, [closed, connect]);
 
     const value = React.useMemo(() => ({
         websocket,
