@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import * as React from 'react';
 import GameProvider from '../contexts/Game';
 import Chat from './Chat';
@@ -12,7 +12,7 @@ const Layout = () => {
         <Box
             sx={{
                 display: 'grid',
-                gridTemplateRows: '100px auto 300px',
+                gridTemplateRows: 'auto 300px',
                 gridTemplateColumns: '400px auto 400px',
                 position: 'absolute',
                 top: 0,
@@ -22,18 +22,10 @@ const Layout = () => {
                 height: '100vh',
             }}
         >
-            <Box
-                sx={{
-                    gridRow: '1/2',
-                    gridColumn: '1/4'
-                }}
-            >
-                <Typography textAlign="center" variant="h2">Circle Jerk</Typography>
-            </Box>
             <GameProvider>
                 <Box
                     sx={{
-                        gridRow: '2/3',
+                        gridRow: '1/2',
                         gridColumn: '2/3'
                     }}
                 >
@@ -41,7 +33,7 @@ const Layout = () => {
                 </Box>
                 <Box
                     sx={{
-                        gridRow: '2/3',
+                        gridRow: '1/2',
                         gridColumn: '3/4'
                     }}
                 >
@@ -49,16 +41,17 @@ const Layout = () => {
                 </Box>
                 <Box
                     sx={{
-                        gridRow: '3/4',
+                        gridRow: '2/3',
                         gridColumn: '2/4',
                     }}
+                    overflow="hidden"
                 >
                     <Chat />
                 </Box>
             </GameProvider>
             <Box
                 sx={{
-                    gridRow: '2/4',
+                    gridRow: '1/3',
                     gridColumn: '1/2',
                 }}
                 overflow="hidden"

@@ -1,4 +1,4 @@
-import { Stack, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import * as React from 'react';
 import { useGameContext } from '../contexts/Game';
 
@@ -6,11 +6,12 @@ const Scores = () => {
     const {
         loaded,
         interpState,
+        name: playerName,
     } = useGameContext();
 
     const list = React.useMemo(() => {
         const scores = Object.entries(interpState) as [string, number][];
-        scores.sort((a, b) => b[1] - a[1]);
+        scores.sort((a, b) => a[1] - b[1]);
         return scores;
     }, [interpState])
 
@@ -21,13 +22,22 @@ const Scores = () => {
     }
     return (
         <Stack>
-            <Typography>Scores</Typography>
-            {list.map(([name, score]) => (
-                <Stack key={name} direction="row" gap="10px">
-                    <Typography fontWeight={700}>{name}</Typography>
-                    <Typography>{score}</Typography>
-                </Stack>
-            ))}
+            <Box
+                display="grid"
+                columnGap="6px"
+                gridTemplateColumns="auto auto"
+                justifyContent="end"
+                p="5px 10px"
+            >
+                {list.map(([name, score], index) => (
+                    [
+                        <Typography gridRow={index} gridColumn={1} justifySelf="end" key={`${name}-score`}>{score}</Typography>,
+                        <Typography gridRow={index} gridColumn={2} justifySelf="start" fontWeight={700} key={`${name}-name`} sx={{
+                            textDecoration: name === playerName ? 'underline' : 'none',
+                        }}>{name}</Typography>,
+                    ]
+                ))}
+            </Box>
         </Stack>
     )
 };
