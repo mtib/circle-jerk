@@ -5,6 +5,7 @@
   "scripts": {
     "start": "parcel ./src/index.html",
     "build": "rm -rf dist/ && parcel build ./src/index.html",
+    "deploy": "WEBSOCKET_URL='wss://circle.mtib.dev/ws/' yarn build && rsync -r --delete-after -v ./dist/ root@feeds.mtib.dev:/var/www/circle/",
     "lint": "eslint ."
   },
   "dependencies": {
